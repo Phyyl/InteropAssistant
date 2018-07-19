@@ -10,7 +10,7 @@ namespace InteropAssistant
     {
         private static readonly Regex functionRegex = new Regex(@"\w+_EXPORT ((?:const )?\w+\**) (\w+)\(([\w*,\[\]\s\n]*)\);");
         private static readonly Regex parameterRegex = new Regex(@"(?:const )?([\w\*]+) ([\w\*\[\]]+)");
-        private static readonly Regex constantRegex = new Regex(@"#define (\w+)[\s\n]*((?:\"".*\"")|(?:\w+))");
+        private static readonly Regex constantRegex = new Regex(@"#define (\w+)[\s\n]*\s+((?:\"".*\"")|(?:\w+))");
         private static readonly Regex functionPointerTypeDefRegex = new Regex(@"typedef (\w+) \(\*(\w+)\)\(([\w*,\[\]\s\n]*)\)");
 
         private static readonly Regex enumRegex = new Regex(@"enum (\w+)[\s\n]*{([\w =,\s\n]+)};");
