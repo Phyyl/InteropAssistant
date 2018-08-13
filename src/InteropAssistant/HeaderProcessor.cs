@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace InteropAssistant
 {
-    public class HeaderProcessor
+    public static class HeaderProcessor
     {
         private static readonly Regex functionRegex = new Regex(@"\w+_EXPORT ((?:const )?\w+\**) (\w+)\(([\w*,\[\]\s\n]*)\);");
         private static readonly Regex parameterRegex = new Regex(@"(?:const )?([\w\*]+) ([\w\*\[\]]+)");
@@ -14,17 +14,18 @@ namespace InteropAssistant
         private static readonly Regex functionPointerTypeDefRegex = new Regex(@"typedef (\w+)\s*\(\*(\w+)\)\(([\w*,\[\]\s\n]*)\)");
 
         private static readonly Regex enumRegex = new Regex(@"enum (\w+)[\s\n]*{([\w =,\s\n]+)};");
-        private static readonly Regex enumValueRegex = new Regex(@"(\w+)\s*=\s*(\w+)");
+        private static readonly Regex enumValueRegex = new Regex(@"(\w+)\s*=?\s*(\w+)?");
         private static readonly Regex enumTypeDefRegex = new Regex(@"typedef enum (\w+) (\w+);");
 
         private static readonly Regex structRegex = new Regex(@"struct (\w+)[\s\n]*{([\w =,; \[\]\s\n]+)};");
         private static readonly Regex structTypeDefRegex = new Regex(@"typedef struct (\w+) (\w+);");
         private static readonly Regex typeDefedStructRegex = new Regex(@"typedef struct (\w+)[\s\n]*{([\w =,; \[\]\s\n]+)} (\w+);");
         private static readonly Regex structFieldRegex = new Regex(@"(?:const )?([\w*]+)[\s\n]*([\w\[\]]+);");
+        private static readonly Regex structFixedSizeFieldRegex = new Regex(@"(?:const )?([\w*]+)\s+(\w+)\[(\w+)\];");
 
-        public static HeaderProcessorResult ProcessInput(string input)
+        public static ProcessedHeader ProcessInput(string input)
         {
-            return new HeaderProcessorResult
+            return new ProcessedHeader
             {
                 Functions = GetFunctions(input),
                 Constants = GetConstants(input),
@@ -92,7 +93,7 @@ namespace InteropAssistant
             OriginalType = m[1],
             DefinedType = m[2]
         }).ToArray();
-        
+
         private static ExportTypeDefedStruct[] GetTypeDefedStructs(string input) => GetMatches(typeDefedStructRegex, input).Select(m => new ExportTypeDefedStruct
         {
             OriginalType = m[1],
@@ -127,88 +128,5 @@ namespace InteropAssistant
                     .ToArray())
                 .ToArray();
         }
-    }
-
-    public class HeaderProcessorResult
-    {
-        public ExportFunction[] Functions { get; set; }
-        public ExportConstant[] Constants { get; set; }
-        public ExportFunctionPointerTypeDef[] FunctionPointerTypeDefs { get; set; }
-
-        public ExportEnum[] Enums { get; set; }
-        public ExportEnumTypeDef[] EnumTypeDefs { get; set; }
-
-        public ExportStruct[] Structs { get; set; }
-        public ExportStructTypeDef[] StructTypeDefs { get; set; }
-        public ExportTypeDefedStruct[] TypeDefedStructs { get; set; }
-    }
-
-    public class ExportStructTypeDef
-    {
-        public string OriginalType { get; set; }
-        public string DefinedType { get; set; }
-    }
-
-    public class ExportEnumTypeDef
-    {
-        public string OriginalType { get; set; }
-        public string DefinedType { get; set; }
-    }
-
-    public class ExportFunctionPointerTypeDef
-    {
-        public string ReturnType { get; set; }
-        public string Name { get; set; }
-        public ExportParameter[] Parameters { get; set; }
-    }
-
-    public class ExportFunction
-    {
-        public string Name { get; set; }
-        public string ReturnType { get; set; }
-        public ExportParameter[] Parameters { get; set; }
-    }
-
-    public class ExportParameter
-    {
-        public string Type { get; set; }
-        public string Name { get; set; }
-    }
-
-    public class ExportEnum
-    {
-        public string Name { get; set; }
-        public ExportEnumValue[] Values { get; set; }
-    }
-
-    public class ExportStruct
-    {
-        public string Name { get; set; }
-        public ExportStructField[] Fields { get; set; }
-    }
-
-    public class ExportTypeDefedStruct
-    {
-        public ExportStructField[] Fields { get; set; }
-        public string OriginalType { get; set; }
-        public string DefinedType { get; set; }
-    }
-
-    public class ExportStructField
-    {
-        public string Type { get; set; }
-        public string Name { get; set; }
-    }
-
-    public class ExportEnumValue
-    {
-        public string Name { get; set; }
-        public string Value { get; set; }
-    }
-
-    public class ExportConstant
-    {
-        public string Name { get; set; }
-        public string Value { get; set; }
     }
 }
